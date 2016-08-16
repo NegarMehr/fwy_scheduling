@@ -1,0 +1,54 @@
+clear all;
+close all;
+clc;
+% network data
+simpleNetworkStruct;
+%% initial condition
+
+n0 = [10;10];
+l0 = [3;3];
+%% setting up the optimization
+
+n_seg = size(params.v,1);
+n_or = size(find(has_or),1);
+n_cur = n0;
+l_cur = l0;
+max_iter = 1000;
+% preallocation
+x = zeros(n_or,max_iter+1);
+alpha = zeros(2*n_seg-1,max_iter+1);
+x0 = [1;1];
+alpha0 = [1;1;1];
+alpha(:,1) = alpha0;
+x(:,1) = x0;
+
+n = zeros(n_seg,iter+1);
+l = zeros(n_seg, iter+1);
+f = zeros(n_seg, iter);
+r = zeros(n_seg, iter);
+n(:,1) = n0;
+n(:,1) = l0;
+%% iterative control
+
+for iter = 1:max_iter
+    [A, b] = optMatrices(params, n_cur);
+    x_cur = x(:,iter);
+    alpha_cur = alpha(:,iter);
+    % decreasing sequence
+    beta = 1/iter;
+    % update primary variable
+    x_next = x_cur + beta * (1./x_cur - A'*alpha_cur);
+    % update prices
+    alpha_next = alpha_cur + beta * (A*x_cur - b);
+    % storage
+    x(:,iter+1) = x_next;
+    alpha(:,iter+1) = alpha_next;
+    % control input
+    r = min(x_next, params.r_bar);
+    % evolve model
+    [n_next, l_next, f_cur] = fwyDynamics(n_cur, l_cur, r, params);
+    % storage
+    n(:,iter+1) = n_next;
+    l(:,iter+1) = l_next;
+    f(:,iter+1) = f;
+end
