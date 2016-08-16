@@ -12,26 +12,26 @@ threeSegNetworkStruc;
 %% initial condition
 
 n0 = [15;15;15];
-l0 = [3;3;3];
+l0 = [3;3];
 %% setting up the optimization
 
 n_seg = size(params.v,1);
 n_or = size(find(params.has_or),1);
 n_cur = n0;
 l_cur = l0;
-max_iter = 500;
+max_iter = 1000;
 % preallocation
 x = zeros(n_or,max_iter+1);
 alpha = zeros(2*n_seg-1,max_iter+1);
 x0 = ones(n_or,1);
-alpha0 = ones();
+alpha0 = ones(2*n_seg-1,1);
 alpha(:,1) = alpha0;
 x(:,1) = x0;
 
 n = zeros(n_seg,max_iter+1);
-l = zeros(n_seg, max_iter+1);
+l = zeros(n_or, max_iter+1);
 f = zeros(n_seg, max_iter);
-r = zeros(n_seg, max_iter);
+r = zeros(n_or, max_iter);
 n(:,1) = n0;
 l(:,1) = l0;
 %% iterative control
@@ -48,12 +48,12 @@ for iter = 1:max_iter
     x_next = fmincon(fun,x0,[],[]);
     % update prices
     alpha_next = alpha_cur + beta * (A*x_cur - b);
-    % storage
-    x(:,iter+1) = x_next;
     alpha(:,iter+1) = alpha_next;
     % control input
     r_cur = min(x_next, params.r_bar);
     r_cur = max(r_cur,zeros(n_or,1));
+     % storage
+    x(:,iter+1) = min(r_cur, l_cur + params.d);
     % evolve model
     [n_next, l_next, f_cur] = fwyDynamics(n_cur, l_cur, r_cur, params);
     % storage

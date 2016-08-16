@@ -12,26 +12,26 @@ threeSegNetworkStruc;
 %% initial condition
 
 n0 = [15;15;15];
-l0 = [3;3;3];
+l0 = [3;3];
 %% setting up the optimization
 
 n_seg = size(params.v,1);
 n_or = size(find(params.has_or),1);
 n_cur = n0;
 l_cur = l0;
-max_iter = 500;
+max_iter = 2000;
 % preallocation
 x = zeros(n_or,max_iter+1);
 alpha = zeros(2*n_seg-1,max_iter+1);
-x0 = [1;1;1];
-alpha0 = [1;1;1;1;1];
+x0 = ones(n_or,1);
+alpha0 = ones(2*n_seg-1,1);
 alpha(:,1) = alpha0;
 x(:,1) = x0;
 
 n = zeros(n_seg,max_iter+1);
-l = zeros(n_seg, max_iter+1);
+l = zeros(n_or, max_iter+1);
 f = zeros(n_seg, max_iter);
-r = zeros(n_seg, max_iter);
+r = zeros(n_or, max_iter);
 n(:,1) = n0;
 l(:,1) = l0;
 %% iterative control

@@ -8,11 +8,11 @@ clear all;
 close all;
 clc;
 % network data
-threeSegNetworkStruc;
+simpleNetworkStruct;
 %% initial condition
 
-n0 = [15;15;15];
-l0 = [3;3;3];
+n0 = [15;15];
+l0 = [3;3];
 %% setting up the optimization
 
 n_seg = size(params.v,1);
@@ -23,8 +23,8 @@ max_iter = 500;
 % preallocation
 x = zeros(n_or,max_iter+1);
 alpha = zeros(2*n_seg-1,max_iter+1);
-x0 = ones(n_or,1);
-alpha0 = ones();
+x0 = [1;1];
+alpha0 = [1;1;1];
 alpha(:,1) = alpha0;
 x(:,1) = x0;
 
@@ -44,16 +44,16 @@ for iter = 1:max_iter
     % decreasing sequence
     beta = 1/iter;
     % update primary variables
-    fun = @(x) -sum(log(x)) + alpha_cur'*(A*x-b); 
-    x_next = fmincon(fun,x0,[],[]);
+    fun = @(x) -log(x(1)) - log(x(2)) + alpha_cur'*(A*x-b); 
+    x_next = fmincon(fun,[1;1],[],[]);
     % update prices
     alpha_next = alpha_cur + beta * (A*x_cur - b);
-    % storage
-    x(:,iter+1) = x_next;
     alpha(:,iter+1) = alpha_next;
     % control input
     r_cur = min(x_next, params.r_bar);
     r_cur = max(r_cur,zeros(n_or,1));
+    % storage
+    x(:,iter+1) = min(r_cur, l_cur + params.d);
     % evolve model
     [n_next, l_next, f_cur] = fwyDynamics(n_cur, l_cur, r_cur, params);
     % storage
@@ -68,16 +68,16 @@ end
 %% plotting
 figure('name','n');
 plot(n','LineWidth',2);
-legend('n_1','n_2','n_3')
+legend('n_1','n_2')
 figure('name','l');
 plot(l','LineWidth',2);
-legend('l_1','l_2','l_3')
+legend('l_1','l_2')
 figure('name','f');
 plot(f','LineWidth',2);
-legend('f_1','f_2','f_3')
+legend('f_1','f_2')
 figure('name','r');
 plot(r','LineWidth',2);
-legend('r_1','r_2','r_3')
+legend('r_1','r_2')
 figure('name','x');
 plot(x','LineWidth',2);
-legend('x_1','x_2','x_3')
+legend('x_1','x_2')
