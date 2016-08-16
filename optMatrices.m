@@ -19,7 +19,7 @@ or_count = 0;
 iter_row = zeros(2,n_or);
 for iter = 1:n_seg-1
     row_ind = 2*(iter-1)+1;
-    seg_ind = ceil(iter/2);
+    seg_ind = iter;
     %% A matrix
     % new block
     new_row = iter_row*beta_bar(seg_ind);
@@ -32,6 +32,8 @@ for iter = 1:n_seg-1
     %% b_d
     b_d(row_ind:row_ind+1,:) = [prod(beta_bar(1:seg_ind,1))*ml_d(1);prod(beta_bar(1:seg_ind,1))*ml_d(1)];
     b(row_ind:row_ind+1,:) = [f_bar(seg_ind);w(seg_ind+1)*(n_bar(seg_ind+1)-n_cur(seg_ind+1))];
+    %% update iterative row
+    iter_row = A(row_ind:row_ind+1,:);
 end
 A(end,:) = beta_bar(end)*A(end-2,:);
 if has_or(end)
