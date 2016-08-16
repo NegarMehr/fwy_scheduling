@@ -1,9 +1,4 @@
-% x is the primary variable of optimization problem
-% alpha's are the prices
-% n : mainline density
-% l : onramp density
-% f : mainline flows
-% r : onramp flows 
+
 clear all;
 close all;
 clc;

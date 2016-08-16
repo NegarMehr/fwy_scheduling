@@ -11,7 +11,7 @@ clc;
 simpleNetworkStruct;
 %% initial condition
 
-n0 = [10;10];
+n0 = [15;15];
 l0 = [3;3];
 %% setting up the optimization
 
@@ -19,7 +19,7 @@ n_seg = size(params.v,1);
 n_or = size(find(params.has_or),1);
 n_cur = n0;
 l_cur = l0;
-max_iter = 100000;
+max_iter = 1000;
 % preallocation
 x = zeros(n_or,max_iter+1);
 alpha = zeros(2*n_seg-1,max_iter+1);
@@ -46,6 +46,7 @@ for iter = 1:max_iter
     % update primary variables
     fun = @(x) -log(x(1)) - log(x(2)) + alpha_cur'*(A*x-b); 
     x_next = fmincon(fun,[1;1],[],[]);
+%     x_next = x_cur + beta * (1./x_cur - A'*alpha_cur);
     % update prices
     alpha_next = alpha_cur + beta * (A*x_cur - b);
     % storage
