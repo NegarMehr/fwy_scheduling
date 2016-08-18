@@ -55,7 +55,8 @@ for iter = 1:max_iter
      % storage
     x(:,iter+1) = min(r_cur, l_cur + params.d);
     % evolve model
-    [n_next, l_next, f_cur] = fwyDynamics(n_cur, l_cur, r_cur, params);
+%     [n_next, l_next, f_cur] = fwyDynamics(n_cur, l_cur, r_cur, params);
+    [n_next, l_next, f_cur] = fwyDynamicsStoch(n_cur, l_cur, r_cur, params); 
     % storage
     n(:,iter+1) = n_next;
     l(:,iter+1) = l_next;
