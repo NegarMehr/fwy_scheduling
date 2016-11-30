@@ -11,11 +11,11 @@ clc;
 largeNetStruct;
 %% initial condition
 
-n0 = 15*ones(10,1);
+n0 = 20*ones(10,1);
 l0 = 3*ones(3,1);
 %% setting up the optimization
-
 n_seg = size(params.v,1);
+or_ind = find(params.has_or);
 n_or = size(find(params.has_or),1);
 n_cur = n0;
 l_cur = l0;
@@ -34,6 +34,21 @@ f = zeros(n_seg, max_iter);
 r = zeros(n_or, max_iter);
 n(:,1) = n0;
 l(:,1) = l0;
+%% Feasible arrivals?
+f_ss = zeros(n_seg,1);
+f_ss(1,1) = (1-params.beta(1))*(params.d_up(1));
+or_it = 0;
+for j = 2:n_seg
+    if params.has_or(j)
+       or_it = or_it + 1;
+       f_ss(j) = (1-params.beta(j))*(f_ss(j-1)+params.d(or_it));
+    else
+       f_ss(j) = (1-params.beta(j))*(f_ss(j-1)); 
+    end
+    if f_ss(j) > params.f_bar(j)
+        warning('infeasible arrival')
+    end
+end
 %% iterative control
 
 for iter = 1:max_iter
@@ -51,6 +66,7 @@ for iter = 1:max_iter
     alpha(:,iter+1) = alpha_next;
     % control input
     r_cur = min(x_next, params.r_bar);
+    r_cur = min(r_cur,(params.n_bar(or_ind) - n_cur(or_ind)));
     r_cur = max(r_cur,zeros(n_or,1));
     r_cur = min(r_cur, l_cur + params.d);
     x_next = r_cur;

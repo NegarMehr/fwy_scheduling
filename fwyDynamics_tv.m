@@ -1,4 +1,4 @@
-function [n_next, l_next, f_cur] = fwyDynamics(n_cur, l_cur, r_cur, params)
+function [n_next, l_next, f_cur] = fwyDynamics(n_cur, l_cur, r_cur, params,t_cur)
 %% This function is used for evolving freeway dynamics for one step
 % extracting parameters
 v = params.v;
@@ -6,8 +6,8 @@ w = params.w;
 f_bar = params.f_bar;
 n_bar = params.n_bar;
 beta_bar = 1 - params.beta;
-or_d = params.d;
-ml_d = params.d_up;
+or_d = params.d_tv(:,t_cur);
+ml_d = params.d_up_tv(:,t_cur);
 has_or = params.has_or;
 M = 5000;
 % downstream densities
@@ -22,7 +22,7 @@ if size(or_ind,1) ~= size(r_cur,1)
     error('Geometric mismatch')
 end
 r_vect = zeros(size(v,1),1);
-r_cur = min(r_cur, l_cur + params.d);
+r_cur = min(r_cur, l_cur + params.d_tv(t_cur));
 r_vect(or_ind) = r_cur;
 % upstream flows
 f_up = [0;f_cur(1:end-1)];

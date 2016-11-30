@@ -8,24 +8,41 @@ clear all;
 close all;
 clc;
 % network data
-threeSegNetworkStruc;
+network_210East;
 %% initial condition
-n0 = [15;15;15];
-l0 = [3;3];
-%% setting up the optimization
-
-n_seg = size(params.v,1);
+n_segment = size(params.v,1);
 n_or = size(find(params.has_or),1);
+
+n0 = 50*ones(n_segment,1);
+l0 = 10*ones(n_or,1);
+%% Charaterizing feasibility of arrivals
+or_it = 0;
+f_ss = zeros(n_seg,1);
+if params.has_or(1)
+    or_it = or_it + 1;
+    f_ss(1,1) = (1-params.beta(1))*(params.d_up(1)+params.d(or_it));
+else
+    f_ss(1,1) = (1-params.beta(1))*(params.d_up(1)+params.d(or_it));
+end
+
+for j = 2:n_seg
+    if params.has_or(j)
+        or_it = or_it + 1;
+        f_ss(j) = (1-params.beta(j))*(f_ss(j-1)+params.d(or_it));
+    else
+        f_ss(j) = (1-params.beta(j))*(f_ss(j-1));
+    end
+    if f_ss(j) > params.f_bar(j)
+        warning('infeasible arrival')
+    end
+end
+%% setting up the optimization
+% n_seg = size(params.v,1);
+% n_or = size(find(params.has_or),1);
 n_cur = n0;
 l_cur = l0;
-max_iter = 500;
+max_iter = 200;
 % preallocation
-x = zeros(n_or,max_iter+1);
-alpha = zeros(2*n_seg-1,max_iter+1);
-x0 = ones(n_or,1);
-alpha0 = ones(2*n_seg-1,1);
-alpha(:,1) = alpha0;
-x(:,1) = x0;
 
 n = zeros(n_seg,max_iter+1);
 l = zeros(n_or, max_iter+1);
@@ -36,22 +53,8 @@ l(:,1) = l0;
 %% iterative control
 
 for iter = 1:max_iter
-    [A, b] = optMatrices(params, n_cur);
-    x_cur = x(:,iter);
-%     x_cur = r_cur + 0.01*ones(n_or,1);
-    alpha_cur = alpha(:,iter);
-    % decreasing sequence
-    beta = 1/iter;
-    % update primary variables
-    fun = @(x) -sum(log(x)) + alpha_cur'*(A*x-b); 
-    x_next = fmincon(fun,x0,[],[]);
-    % update prices
-    alpha_next = alpha_cur + beta * (A*x_cur - b);
-    % storage
-    x(:,iter+1) = x_next;
-    alpha(:,iter+1) = alpha_next;
     % control input
-    r_cur = min(x_next, params.r_bar);
+    r_cur = min(l_cur + params.d, params.r_bar);
     r_cur = max(r_cur,zeros(n_or,1));
     % evolve model
     [n_next, l_next, f_cur] = fwyDynamics(n_cur, l_cur, r_cur, params);
@@ -80,3 +83,11 @@ legend('r_1','r_2','r_3')
 figure('name','x');
 plot(x','LineWidth',2);
 legend('x_1','x_2','x_3')
+
+%% 
+figure;
+plot(l_cur','b');
+figure;
+plot(r_cur','r');
+figure;
+plot(params.d','k');

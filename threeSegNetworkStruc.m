@@ -9,9 +9,9 @@ params.w = [0.2;0.2;0.2];
 % split ratios
 params.beta = [0.2;0.2;0];
 % or demands
-params.d = [0.3;1];
+params.d = [1.5;1.5];
 % ml demands
-params.d_up = [3.5;0;0];
+params.d_up = [3;0;0];
 % capacities
 params.f_bar = [4;4;4];
 % jam densities
